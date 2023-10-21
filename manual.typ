@@ -28,7 +28,7 @@
 #v(3em)
 
 = Introduction
-This package implements a Cetz chart-like object for displaying mass spectrometric data in Typst documents. It allows for individually styled mass peaks, callouts, titles, and mass calipers.
+This package implements a Cetz chart-like object for displaying mass spectrometric data in Typst documents. It allows for individually styled mass peaks, callouts, titles, and mass callipers.
 
 = Usage
 This is the minimal starting point:
@@ -144,7 +144,7 @@ The `plot-extras` entry in the `args` positional argument is a function taking o
     (this.callout-above)(this, 72, content: MolecularIon())
     (this.callout-above)(this, 27)
     (this.callout-above)(this, 41)
-    (this.calipers)(this, 43, 57, content: [\-CH#sub("2")])
+    (this.callipers)(this, 43, 57, content: [\-CH#sub("2")])
     (this.title)(this, [Isobutelene Epoxide])
   }
 )) 
@@ -156,7 +156,7 @@ The `plot-extras` entry in the `args` positional argument is a function taking o
     (this.callout-above)(this, 72, content: MolecularIon())
     (this.callout-above)(this, 27)
     (this.callout-above)(this, 41)
-    (this.calipers)(this, 43, 57, content: [\-CH#sub("2")])
+    (this.callipers)(this, 43, 57, content: [\-CH#sub("2")])
     (this.title)(this, [Isobutelene Epoxide])
   }
 )) 
@@ -175,5 +175,5 @@ the `#ms.title` method allows the addition of a title to a mass spectrum. It sho
 === `#ms.callout-above(this, mz, content: [])`
 the `#ms.callout-above` method places a callout slightly above the intensity peak for a given mass-charge ratio. It should be called within the context of a `plot-extras(this)` function.
 
-=== `#ms.calipers(this, mz1, mz2, content: none, height: none)`
-the `#ms.calipers` method places a mass calipers between two mass spectrum peaks, along with any desired content centered above the calipers. If `height` is not specified, it is set automatically to a few units above the most intense peak. If `content` is not specified, it is set automatically to represent the loss of mass between the specified peaks. It should be called within the context of a `plot-extras(this)` function.
+=== `#ms.callipers(this, mz1, mz2, content: none, height: none)`
+the `#ms.callipers` method places a mass callipers between two mass spectrum peaks, along with any desired content centered above the callipers. If `height` is not specified, it is set automatically to a few units above the most intense peak. If `content` is not specified, it is set automatically to represent the loss of mass between the specified peaks. It should be called within the context of a `plot-extras(this)` function.

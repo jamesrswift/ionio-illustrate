@@ -17,7 +17,7 @@
     (this.callout-above)(this, 93)
     (this.callout-above)(this, 80)
     (this.callout-above)(this, 71)
-    (this.calipers)(this, 41, 55, content: [-CH#sub[2]])
+    (this.callipers)(this, 41, 55, content: [-CH#sub[2]])
     (this.title)(this, [Linalool, +70eV])
   },
   linestyle: (this, mz)=>{

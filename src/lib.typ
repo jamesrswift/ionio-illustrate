@@ -28,7 +28,7 @@
     frame: true,
     label: (offset: 0.3)
   ),
-  calipers: (
+  callipers: (
     stroke: gray + 0.7pt
   ),
   callouts: (
@@ -188,7 +188,7 @@
       )
     },
 
-    calipers: ( this,
+    callipers: ( this,
       start, end, // mass-charge ratios
       height: none,
       content: none,

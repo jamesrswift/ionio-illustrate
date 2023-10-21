@@ -13,7 +13,7 @@
 </a>
 </div>
 
-This package implements a Cetz chart-like object for displying mass spectrometric data in Typst documents. It allows for individually styled mass peaks, callouts, titles, and mass calipers.
+This package implements a Cetz chart-like object for displying mass spectrometric data in Typst documents. It allows for individually styled mass peaks, callouts, titles, and mass callipers.
 <br />
   <p align="center">
     <a href="https://github.com/jamesxx/ionio-illustrate/blob/main/manual.pdf"><strong>Explore the docs »</strong></a>
