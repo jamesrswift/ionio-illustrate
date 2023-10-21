@@ -8,10 +8,10 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "commit": "git add -A && git cz",
-    "preversion": "echo \"Error: no test specified\" && exit 1",
-    "release": "standard-version",
-    "postversion": "\"./scripts/package.bat\" && git push && git push --tags"
+    "release:commit": "git add -A && git cz",
+    "release:semver": "standard-version",
+    "release:package": "\"./scripts/package.bat\"",
+    "release:publish": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
@@ -36,5 +36,8 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "dependencies": {
+    "npm-run-all": "^4.1.5"
   }
 }
