@@ -8,9 +8,10 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "gallery": "call scripts/gallery.bat",
     "release:commit": "git add -A && git cz",
     "release:semver": "standard-version",
-    "release:package": "\"./scripts/package.bat\"",
+    "release:package": "call scripts/package.bat",
     "release:publish": "git push && git push --tags"
   },
   "repository": {

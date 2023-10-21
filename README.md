@@ -16,4 +16,4 @@ This package implements a Cetz chart-like object for displying mass spectrometri
 ```
 
 ## Example output
-![](assets/example_plot.png)
+![](gallery/linalool.typ.png)
