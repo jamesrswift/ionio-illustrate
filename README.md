@@ -1,4 +1,16 @@
 # The `ionio-illustrate` package
+<div align="center">
+<a href="https://github.com/jamesxx/ionio-illustrate/blob/master/LICENSE">
+  <img alt="GitHub" src="https://img.shields.io/github/license/jamesxx/ionio-illustrate">
+</a>
+<a href="https://github.com/typst/packages/tree/main/packages/preview/ionio-illustrate">
+  <img alt="typst package" src="https://img.shields.io/badge/typst-package-239dad">
+</a>
+<a href="https://github.com/JamesxX/ionio-illustrate/tags">
+<img alt="GitHub tag (with filter)" src="https://img.shields.io/github/v/tag/jamesxx/ionio-illustrate">
+</a>
+</div>
+
 This package implements a Cetz chart-like object for displying mass spectrometric data in Typst documents. It allows for individually styled mass peaks, callouts, titles, and mass calipers.
 
 ## Usage
