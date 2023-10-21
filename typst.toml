@@ -7,4 +7,4 @@ license = "MIT"
 description = "Mass spectra with annotations for typst."
 repository = "https://github.com/JamesxX/ionio-illustrate"
 keywords = ["mass spectrometry", "cetz", "chart"]
-exclude = ["/assets/*", "/gallery/*", "/manual.pdf", "/manual.typ"]
+exclude = ["/assets/*", "/scripts/*","/gallery/*", "/manual.pdf", "/manual.typ", "/.gitignore", "/package.json", "/package-lock.json"]
