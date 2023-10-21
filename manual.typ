@@ -22,7 +22,7 @@
 )
 
 #align(center, text(16pt)[*The `ionio-illustrate` package*])
-#align(center)[Version 0.1.0]
+#align(center)[Version 0.1.1]
 
 #set par(justify: true, leading: 0.618em)
 #v(3em)
