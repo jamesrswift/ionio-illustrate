@@ -6,7 +6,7 @@
   ),
   title: (:),
   callipers: (
-    line: (stroke: blue + 0.7pt),
+    line: (stroke: gray + 0.7pt),
     content: (:)
   ),
   callouts: (
