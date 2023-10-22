@@ -104,7 +104,7 @@ This documentation is generated automatically for each package release, and is g
 // --------------------------------------------
 #pagebreak()
 = Humanist Documentation <humandoc>
-This documentation is hand-written, and therefore may sometimes be incorrect if it hasn't been updated to a recent API change (though hopefully those are few). If you see an issue in this documentation, please put in an issue or a pull request on the GitHub repository. That being said, the code examples that run 
+This documentation is hand-written, and therefore may sometimes be incorrect if it hasn't been updated to a recent API change (though hopefully those are few). If you see an issue in this documentation, please put in an issue or a pull request on the GitHub repository. That being said, a best effort is made to ensure that this section is useful. 
 
 == `mass-spectrum()`
 The `mass-spectrum()` function takes two positional arguments:
