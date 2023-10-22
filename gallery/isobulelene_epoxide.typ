@@ -12,4 +12,4 @@
   range: (0,100),
 )) 
 
-#(ms.display)(ms)
+#(ms.display)()

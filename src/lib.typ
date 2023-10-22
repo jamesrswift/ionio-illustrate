@@ -28,6 +28,7 @@
     frame: true,
     label: (offset: 0.3)
   ),
+  title: (:),
   callipers: (
     stroke: gray + 0.7pt
   ),
@@ -75,120 +76,48 @@
     ),
     plot-extras: (this)=>{},
 
-// --------------------------------------------
-// Methods : Rendering
-// --------------------------------------------
-    
-    /// The ms.display method is responsible for rendering
-    display: (this) => {
+  )
 
-      // Setup canvas
-      cetz.canvas({
+    // Overrides
+  prototype = merge-dictionary(
+    prototype,
+    args
+  )
 
-        import cetz.draw: *
-        let (x,y) = (this.setup-axes)(this)    
+  prototype.style = merge-dictionary(
+    mass-spectrum-default-style,
+    prototype.style,
+  )
 
-        // Begin group  
-        cetz.draw.group(ctx=>{
-
-          // Style
-          let style = merge-dictionary(
-            merge-dictionary(mass-spectrum-default-style, cetz.styles.resolve(ctx.style, (:), root: "mass-spectrum")),
-            this.style
-          )
-
-          // Setup scientific axes
-          (this.setup-plot)(this, ctx, x, y, ..style.axes)
-
-          cetz.axes.axis-viewport(this.size, x, y,{
-
-            // Add in plot extras first
-            (this.plot-extras)(this)
-
-            // Add each individual mass peak
-            if this.data.len() > 0 {          
-              for (i, row) in data.enumerate() {
-                let x = float(row.at(this.keys.mz))
-                let y = float(row.at(this.keys.intensity))
-                (this.display-single-peak)(this, x, x, y, ..style.peaks)
-              }
-            }
-          })
-        })
-      })
-    },
-
-    // ms.display-single-peak handles the rendering of a single mass peak
-    display-single-peak: (this, idx, mz, intensity, ..arguments) => {
-      if (mz > this.range.at(0) and mz < this.range.at(1) ){
-        cetz.draw.line(
-          (mz, 0),
-          (rel: (0,intensity)),
-          ..arguments, // Global style is overriden by individual style
-          ..(this.linestyle)(this, idx)
-        )
-      }
-    },
-
-// --------------------------------------------
-// Methods : Property Setup, Internal
-// --------------------------------------------
-
-    setup-plot: (this, ctx, x, y, ..arguments) => {
-      cetz.axes.scientific(
-        size: this.size,
-        
-        // Axes
-        top: none, bottom: x,
-        right: none, left: y, // TODO: Optional secondary axis
-        ..arguments
-      )
-    },
-
-    setup-axes: (this) => {
-     this.axes.x = cetz.axes.axis(
-          min: this.range.at(0), 
-          max: this.range.at(1),
-          label: this.labels.x,
-        )
-     this.axes.y = cetz.axes.axis(
-          min: 0, 
-          max: 110,
-          label: this.labels.y,
-          ticks: (step: 20, minor-step: none)
-        )
-      return this.axes
-    },
-
-// --------------------------------------------
+  // --------------------------------------------
 // Methods : Utility
 // --------------------------------------------
 
-    get-intensity-at-mz: (this, mz) => {
+    prototype.get-intensity-at-mz = (mz) => {
       return float(
-        (this.data).filter(
-          it=>float(it.at(this.keys.mz, default:0))==mz
-        ).at(0).at(this.keys.intensity)
+        (prototype.data).filter(
+          it=>float(it.at(prototype.keys.mz, default:0))==mz
+        ).at(0).at(prototype.keys.intensity)
       )
-    },
+    }
 
 // --------------------------------------------
 // Methods : Additional Content
 // --------------------------------------------
 
-    callout-above: (this, mz, content: none, y-offset: 0.3em) => {
+    prototype.callout-above = (mz, content: none, y-offset: 0.3em) => {
       if ( content == none ) { content = mz}
       // Style
-      let style = merge-dictionary(mass-spectrum-default-style, this.style)
+      let style = merge-dictionary(mass-spectrum-default-style, prototype.style)
 
       return cetz.draw.content(
         anchor: "bottom",
-        (mz, (this.get-intensity-at-mz)(this, mz)), box(inset: y-offset, [#content]),
+        (mz, (prototype.get-intensity-at-mz)(mz)), box(inset: y-offset, [#content]),
         ..style.callouts
       )
-    },
+    }
 
-    callipers: ( this,
+    prototype.callipers = (
       start, end, // mass-charge ratios
       height: none,
       content: none,
@@ -197,8 +126,8 @@
       if (content == none){ content = [-#calc.abs(start - end)] }
 
       // Determine height
-      let start_height = (this.get-intensity-at-mz)(this, start)
-      let end_height = (this.get-intensity-at-mz)(this, end)
+      let start_height = (prototype.get-intensity-at-mz)(start)
+      let end_height = (prototype.get-intensity-at-mz)(end)
       if ( height == none ) { height = calc.max(start_height, end_height) + 5 }
 
       let draw-arrow(x, y) = cetz.draw.line(
@@ -213,7 +142,7 @@
         draw-arrow(end, end_height)
         
         cetz.draw.merge-path({
-          cetz.draw.line( (start, start_height + 2), (start, height) )
+          cetz.draw.line((start, start_height + 2), (start, height))
           cetz.draw.line((start, height), (end, height))
           cetz.draw.line((end, height),(end, end_height + 2))
         }, stroke: stroke)
@@ -225,29 +154,105 @@
           box(inset: 0.3em, content)
         )
       }
-    },
+    }
 
-    title: (this, content, anchor: "top-left", ..args) => {
+  prototype.title = (content, anchor: "top-left", ..args) => {
       return cetz.draw.content(
         anchor: anchor,
-        (this.range.at(0), 110),
+        (prototype.range.at(0), 110),
         box(inset: 0.5em, content),
+        ..prototype.style.title,
         ..args
       )
     }
 
-  )
+  // --------------------------------------------
+// Methods : Property Setup, Internal
+// --------------------------------------------
 
-  // Overrides
-  prototype = merge-dictionary(
-    prototype,
-    args
-  )
+    prototype.setup-plot = (ctx, x, y, ..arguments) => {
+      cetz.axes.scientific(
+        size: prototype.size,
+        
+        // Axes
+        top: none, bottom: x,
+        right: none, left: y, // TODO: Optional secondary axis
+        ..arguments
+      )
+    }
 
-  prototype.style = merge-dictionary(
-    mass-spectrum-default-style,
-    prototype.style,
-  )
+    prototype.setup-axes = () => {
+      let axes = (:)
+     axes.x = cetz.axes.axis(
+          min: prototype.range.at(0), 
+          max: prototype.range.at(1),
+          label: prototype.labels.x,
+        )
+     axes.y = cetz.axes.axis(
+          min: 0, 
+          max: 110,
+          label: prototype.labels.y,
+          ticks: (step: 20, minor-step: none)
+        )
+      return axes
+    }
+
+
+// --------------------------------------------
+// Methods : Rendering
+// --------------------------------------------
+
+    // ms.display-single-peak handles the rendering of a single mass peak
+    prototype.display-single-peak = (idx, mz, intensity, ..arguments) => {
+      if (mz > prototype.range.at(0) and mz < prototype.range.at(1) ){
+        cetz.draw.line(
+          (mz, 0),
+          (rel: (0,intensity)),
+          ..arguments, // Global style is overriden by individual style
+          ..(prototype.linestyle)(prototype, idx)
+        )
+      }
+    }
+    
+    /// The ms.display method is responsible for rendering
+    prototype.display = () => {
+
+      // Setup canvas
+      cetz.canvas({
+
+        import cetz.draw: *
+        let (x,y) = (prototype.setup-axes)()    
+
+        // Begin group  
+        cetz.draw.group(ctx=>{
+
+          // Style
+          let style = merge-dictionary(
+            merge-dictionary(mass-spectrum-default-style, cetz.styles.resolve(ctx.style, (:), root: "mass-spectrum")),
+            prototype.style
+          )
+
+          // Setup scientific axes
+          (prototype.setup-plot)(ctx, x, y, ..style.axes)
+
+          cetz.axes.axis-viewport(prototype.size, x, y,{
+
+            // Add in plot extras first
+            (prototype.plot-extras)(prototype)
+
+            // Add each individual mass peak
+            if prototype.data.len() > 0 {          
+              for (i, row) in data.enumerate() {
+                let x = float(row.at(prototype.keys.mz))
+                let y = float(row.at(prototype.keys.intensity))
+                (prototype.display-single-peak)(x, x, y, ..style.peaks)
+              }
+            }
+          })
+        })
+      })
+    }
+
 
   // Asserts
   assert(type(prototype.keys.mz) in (int, str))

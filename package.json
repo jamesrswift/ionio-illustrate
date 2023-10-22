@@ -1,6 +1,6 @@
 {
   "name": "ionio-illustrate",
-  "version": "0.1.2",
+  "version": "0.1.0",
   "description": "Mass spectra with annotations for typst.",
   "main": "none",
   "directories": {
