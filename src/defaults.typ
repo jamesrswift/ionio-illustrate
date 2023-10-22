@@ -13,8 +13,8 @@
     stroke: black
   ),
   peaks: (
-    stroke: black
+    stroke: black + 0.7pt
   ),
-  data1: (peaks: (stroke: blue)),
-  data2: (peaks: (stroke: red)),
+  data1: (peaks: (stroke: blue + 0.7pt)),
+  data2: (peaks: (stroke: red + 0.7pt)),
 )

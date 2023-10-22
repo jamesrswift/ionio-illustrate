@@ -3,7 +3,7 @@
 #import "defaults.typ": *
 
 #let mass-spectrum-modes =(
-  "single", "dual-reflection"
+  "single", "dual-reflection", // "dual-shift"
 )
 
 /// Returns an object representing mass spectrum content.
@@ -42,6 +42,13 @@
     linestyle: (this, idx)=>{},
     plot-extras: (this)=>{},
     plot-extras-bottom: (this)=>{},
+
+// --------------------------------------------
+// "Private" member data
+// --------------------------------------------
+    _reflected: false
+
+
   )
 
   // Asserts
@@ -61,14 +68,19 @@
   //
   // - mz (string, integer, float): Mass-charge ratio for which the intensity is being queried
   // -> float
-  prototype.get-intensity-at-mz = (mz) => {
+  prototype.get-intensity-at-mz = (mz, reflected: false) => {
 
-    // TODO: Handle reflections
+    let data = prototype.data1
+    if ( reflected ){ data = prototype.data2 }
 
-    let intensity_arr = (prototype.data1).filter(
-        it=>float(it.at(prototype.keys.mz, default:0))==mz
-      )
+    // Search all mz matching query
+    let intensity_arr = data.filter(
+      it=>float(it.at(prototype.keys.mz, default:0))==mz
+    )
+
     if ( intensity_arr.len() == 0 ) {return 0}
+
+    // Return "first" hit
     return float(
       intensity_arr.at(0).at(prototype.keys.intensity)
     )
@@ -83,15 +95,16 @@
   // - content (content, string, none): Content to show above mass peak. Defaults to given mz
   // - y-offset (length): Distance at which to display content above mass peak
   // -> content
-  prototype.callout-above = (mz, content: none, y-offset: 0.3em) => {
+  prototype.callout-above = (mz, content: none, y-offset: 0.3em, reflected: false) => {
     if ( mz <= prototype.range.at(0) or mz >= prototype.range.at(1) ){ return }
     if ( content == none ) { content = mz}
 
-    // TODO: Handle reflections
+    let y = (prototype.get-intensity-at-mz)(mz, reflected: reflected)
+    if (reflected){y=-1*y}
 
     return cetz.draw.content(
-      anchor: "bottom",
-      (mz, (prototype.get-intensity-at-mz)(mz)), box(inset: y-offset, [#content]),
+      anchor: if reflected {"top"} else {"bottom"},
+      (mz, y), box(inset: y-offset, [#content]),
       ..prototype.style.callouts
     )
   }
@@ -137,13 +150,11 @@
     }
   }
 
-  prototype.title = (content, anchor: "top-left", ..args) => {
-
-    // TODO: Handle reflections
+  prototype.title = (content, reflected: false, ..args) => {
 
     return cetz.draw.content(
-      anchor: anchor,
-      (prototype.range.at(0), 110),
+      anchor: if reflected {"bottom-left"} else {"top-left"},
+      (prototype.range.at(0), if reflected {-110} else {110}),
       box(inset: 0.5em, content),
       ..prototype.style.title,
       ..args
@@ -175,8 +186,8 @@
       //ticks: (step: 10, minor-step: none)
     )
     axes.y = cetz.axes.axis(
-      min: if reflection {-115} else {0}, 
-      max:  if reflection {115} else {110},
+      min: if reflection {-110} else {0}, 
+      max:  110,
       label: prototype.labels.y,
       ticks: (step: if reflection {40} else {20}, minor-step: none)
     )
@@ -233,7 +244,7 @@
   }
 
   // The ms.display-dual-reflection method is responsible for rendering
-  // multiple mass spectra on the same plot
+  // multiple mass spectra on the same plot by reflecting one of the plots
   prototype.display-dual-reflection = (ctx) => {
 
     // If there is only one dataset, fail safely quickly
@@ -258,9 +269,43 @@
     cetz.axes.axis-viewport(prototype.size, x, y,{
       (prototype.plot-extras)(prototype)
       (prototype.display-single-data)(prototype.data1, style-data1, scale: 1)
-      cetz.draw.line((prototype.range.at(0), 0), (prototype.range.at(1), 0))
-      (prototype.plot-extras-bottom)(prototype)
+
+      (prototype.plot-extras-bottom)(prototype, reflected: true)
       (prototype.display-single-data)(prototype.data2, style-data2, scale: -1)
+      cetz.draw.line((prototype.range.at(0), 0), (prototype.range.at(1), 0))
+    })
+  }
+
+  // The ms.display-dual-shift method is responsible for rendering
+  // multiple mass spectra on the same plot by shifting one of the plots
+  prototype.display-dual-shift = (ctx) => {
+
+    // If there is only one dataset, fail safely quickly
+    if ( prototype.data2 == none){
+      return (prototype.display-single)(ctx)
+    }
+
+    import cetz.draw: *  
+    let (x,y) = (prototype.setup-axes)()
+
+    // Style
+    let style = merge-dictionary(
+      merge-dictionary(mass-spectrum-default-style, cetz.styles.resolve(ctx.style, (:), root: "mass-spectrum")),
+      prototype.style
+    )
+    let style-data1 = merge-dictionary(style, prototype.style.data1).peaks
+    let style-data2 = merge-dictionary(style, prototype.style.data2).peaks
+
+    // Setup scientific axes
+    (prototype.setup-plot)(ctx, x, y, ..style.axes)
+
+    cetz.axes.axis-viewport(prototype.size, x, y,{
+      (prototype.plot-extras)(prototype)
+      (prototype.display-single-data)(prototype.data1, style-data1, dx:-0.25)
+
+      (prototype.plot-extras-bottom)(prototype, reflected:true)
+      (prototype.display-single-data)(prototype.data2, style-data2, dx:+0.25)
+      cetz.draw.line((prototype.range.at(0), 0), (prototype.range.at(1), 0))
     })
   }
 
@@ -271,7 +316,8 @@
 
     let render = (
       if mode == "single" {prototype.display-single} else
-      if mode == "dual-reflection" {prototype.display-dual-reflection} 
+      if mode == "dual-reflection" {prototype.display-dual-reflection} else
+      if mode == "dual-shift" {prototype.display-dual-shift} 
     )
 
     // Setup canvas
