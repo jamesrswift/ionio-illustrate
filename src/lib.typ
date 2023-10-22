@@ -3,9 +3,16 @@
 #import "defaults.typ": *
 
 /// Returns an object representing mass spectrum content.
+///
+/// - data (array): The mass spectrum in the format of a 2D array, or an array of dictionarys.
+///         By default, the mass-charges ratios are in the first column, and the relative
+///         intensities are in the second column.
+/// - args (dictionary): Override default behaviour of the mass spectrum by overriding methods,
+///         or setting fields.
+/// -> dictionary, none
 #let mass-spectrum(
   data,
-  args: (tick: (length:-0.1))
+  args: (:),
 ) = {
 
   let prototype = (
@@ -13,7 +20,7 @@
 // --------------------------------------------
 // Public member data
 // --------------------------------------------
-    
+
     data: data,
     keys: (
       mz: 0,
@@ -30,21 +37,18 @@
     plot-extras: (this)=>{},
   )
 
-    // Overrides
-  prototype = merge-dictionary(
-    prototype,
-    args
-  )
+  // Overrides. This ensures the prototype is properly formed by the time we need it
+  prototype = merge-dictionary(prototype,args)
+  prototype.style = merge-dictionary(mass-spectrum-default-style,prototype.style)
 
-  prototype.style = merge-dictionary(
-    mass-spectrum-default-style,
-    prototype.style,
-  )
-
-  // --------------------------------------------
+// --------------------------------------------
 // Methods : Utility
 // --------------------------------------------
 
+  /// Get the intensity of a mass-peak for a given mass-charge ratio
+  //
+  // - mz (string, integer, float): Mass-charge ratio for which the intensity is being queried
+  // -> float
   prototype.get-intensity-at-mz = (mz) => {
     return float(
       (prototype.data).filter(
@@ -57,15 +61,20 @@
 // Methods : Additional Content
 // --------------------------------------------
 
+  // Plot-extras function that will place content above a mass peak
+  // - mz (string, integer, float): Mass-charge above which to display content
+  // - content (content, string, none): Content to show above mass peak. Defaults to given mz
+  // - y-offset (length): Distance at which to display content above mass peak
+  // -> content
   prototype.callout-above = (mz, content: none, y-offset: 0.3em) => {
     if ( content == none ) { content = mz}
     // Style
-    let style = merge-dictionary(mass-spectrum-default-style, prototype.style)
+    // let style = merge-dictionary(mass-spectrum-default-style, prototype.style)
 
     return cetz.draw.content(
       anchor: "bottom",
       (mz, (prototype.get-intensity-at-mz)(mz)), box(inset: y-offset, [#content]),
-      ..style.callouts
+      ..prototype.style.callouts
     )
   }
 
@@ -73,7 +82,6 @@
     start, end, // mass-charge ratios
     height: none,
     content: none,
-    stroke: gray + 0.7pt // Style
   ) => {
     if (content == none){ content = [-#calc.abs(start - end)] }
 
@@ -84,7 +92,7 @@
 
     let draw-arrow(x, y) = cetz.draw.line(
       (x - 0.5, y + 2),(x + 0.5, y + 2),
-      stroke: stroke
+      ..prototype.style.callipers.line
     )
 
     // Draw
@@ -97,13 +105,14 @@
         cetz.draw.line((start, start_height + 2), (start, height))
         cetz.draw.line((start, height), (end, height))
         cetz.draw.line((end, height),(end, end_height + 2))
-      }, stroke: stroke)
+      }, ..prototype.style.callipers.line)
 
       // Content
       cetz.draw.content(
         ( (start + end) / 2, height),
         anchor: "bottom",
-        box(inset: 0.3em, content)
+        box(inset: 0.3em, content),
+        ..prototype.style.callipers.content
       )
     }
   }
@@ -118,7 +127,7 @@
     )
   }
 
-  // --------------------------------------------
+// --------------------------------------------
 // Methods : Property Setup, Internal
 // --------------------------------------------
 
