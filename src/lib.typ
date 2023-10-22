@@ -26,7 +26,7 @@
       mz: 0,
       intensity: 1
     ),
-    size: (auto, 1),
+    size: (14,5),
     range: (40, 400),
     style: mass-spectrum-default-style,
     labels: (
@@ -50,10 +50,12 @@
   // - mz (string, integer, float): Mass-charge ratio for which the intensity is being queried
   // -> float
   prototype.get-intensity-at-mz = (mz) => {
-    return float(
-      (prototype.data).filter(
+    let intensity_arr = (prototype.data).filter(
         it=>float(it.at(prototype.keys.mz, default:0))==mz
-      ).at(0).at(prototype.keys.intensity)
+      )
+    if ( intensity_arr.len() == 0 ) {return 0}
+    return float(
+      intensity_arr.at(0).at(prototype.keys.intensity)
     )
   }
 
