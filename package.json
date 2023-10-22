@@ -1,6 +1,6 @@
 {
   "name": "ionio-illustrate",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Mass spectra with annotations for typst.",
   "main": "none",
   "directories": {
@@ -11,7 +11,7 @@
     "gallery": "call scripts/gallery.bat",
     "docs": "typst c manual.typ",
     "dev:commit": "npm run release:commit && npm run release:commit:push",
-    "dev:publish": "npm run docs && npm run release:commit && npm run release:semver && npm run release:package && npm run release:publish",
+    "dev:publish": "npm run docs && git add -A && npm run release:semver && npm run release:package && npm run release:publish",
     "release:commit": "git add -A && git cz",
     "release:commit:push": "git push",
     "release:semver": "standard-version",
