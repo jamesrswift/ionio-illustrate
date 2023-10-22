@@ -46,7 +46,7 @@
 // --------------------------------------------
 
 #align(center, text(16pt)[*The `ionio-illustrate` package*])
-#align(center)[Version 0.1.1]
+#align(center)[Version 0.3.0]
 
 #set par(justify: true, leading: 0.618em)
 #v(3em)
@@ -58,7 +58,7 @@ This package implements a Cetz chart-like object for displaying mass spectrometr
 This is the minimal starting point:
 
 #example[```typ
-#import "@preview/ionio-illustrate:0.1.1": *
+#import "@preview/ionio-illustrate:0.3.0": *
 #let data = csv("isobutelene_epoxide.csv")
 
 #let ms = mass-spectrum(massspec, args: (

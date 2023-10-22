@@ -29,7 +29,7 @@ This package implements a Cetz chart-like object for displying mass spectrometri
 To make use of the `ionio-illustrate` package, you'll need to add it to your project like shown below. Make sure you are importing a version that supports your end goal.
 
 ```typst
-#import "@preview/ionio-illustrate:0.1.1": *
+#import "@preview/ionio-illustrate:0.3.0": *
 ```
 
 Then, load in your mass spectrum data and pass it through to the package like so. Data should be 2D array, and by default the mass-charge ratio is in the first column, and the relative intensities are in the second column.
