@@ -1,9 +1,18 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
-set /p version=Enter the version you're shipping (in SemVer format, e.g., 0.1.0): 
+rem set /p version=Enter the version you're shipping (in SemVer format, e.g., 0.1.0): 
+rem Get the latest Git tag
+for /f "delims=" %%a in ('git tag') do (
+    set "version=%%a"
+)
 
-echo Shipping version %version%...
+rem Remove the prefix "v" from the version
+set "version=!version:~1!"
+
+echo Shipping version !version!...
+
+rem echo Shipping version %version%...
 
 rem Create destination directory
 mkdir dist\%version%
