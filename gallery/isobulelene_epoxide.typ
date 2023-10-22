@@ -4,12 +4,9 @@
 
 #import "../src/lib.typ": *
 
-#let data = csv("../assets/linalool.csv")
+#let data = csv("../assets/isobutelene_epoxide.csv")
 #let massspec = data.slice(1)
 
-#let ms = mass-spectrum(massspec, args: (
-  size: (12,6),
-  range: (0,100),
-)) 
+#let ms = mass-spectrum(massspec, args: (range: (0,100),)) 
 
 #(ms.display)()

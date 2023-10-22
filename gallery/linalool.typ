@@ -8,7 +8,6 @@
 #let massspec = data.slice(1)
 
 #let ms = mass-spectrum(massspec, args: (
-  size: (14,5),
   range: (0,150),
   plot-extras: (this) => {
     (this.callout-above)(136, content: MolecularIon())
@@ -22,12 +21,6 @@
   linestyle: (this, mz)=>{
     if mz in (93,) { return (stroke: red) }
     if mz in (71,) { return (stroke: blue) }
-  },
-  style: (
-    title: (
-      frame: "rect",
-      fill: gray,
-    )
-  )
+  }
 )) 
 #(ms.display)()
