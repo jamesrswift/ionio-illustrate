@@ -302,7 +302,7 @@ It takes one positional argument `mz` (#show-type("integer"), #show-type("float"
 
 - If `content` is #show-type("none"), the default value is that which is provided as `mz`.
 - If `height` is #show-type("none"), the default value is `0.3em`.
-#text(fill: red)[*TO DO*: Ensure that this value is passed correctly, consider moving it to style]
+- If `mz` is outside of the mass spectrums rang x-axis range, it will not be shown
 
 ==== `#ms.callipers(mz1, mz2, content: none, height: none)`
 The `#ms.callipers` method places a mass callipers between two mass spectrum peaks, along with any desired content centered above the callipers. 
@@ -312,8 +312,8 @@ It takes two positional arguments `mz1` and `mz2` (either of which are #show-typ
 - If `content` is #show-type("none"), the default value is to display the negative absolute difference between `mz1` and `mz2`.
 
 - If `height` is #show-type("none"), the default value is `0.3em`.
-#text(fill: red)[*TO DO*: Ensure that this value is passed correctly]
 
-#warning[The behaviour is *undefined* when `mz1` is greater in value than `mz2`.]
+#warning[The behaviour is *undefined* when either `mz1` or `mz2` are outside the x-axis range.]
 
-If `height` is not specified, it is set automatically to a few units above the most intense peak. If `content` is not specified, it is set automatically to represent the loss of mass between the specified peaks.
+- If `height` is not specified, it is set automatically to a few units above the most intense peak. 
+- If `content` is not specified, it is set automatically to represent the loss of mass between the specified peaks.
