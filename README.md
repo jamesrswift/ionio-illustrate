@@ -97,5 +97,6 @@ Distributed under the MIT License. See <a href="https://github.com/jamesxx/ionio
 
 ## Gallery
 ![](gallery/linalool.typ.png)
+![](gallery/dual-reflection.typ.png)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
