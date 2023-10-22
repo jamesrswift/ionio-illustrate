@@ -53,7 +53,7 @@ There are many ways to further enhance your spectrum, please check out the manua
 
 <!-- ROADMAP -->
 ## Roadmap
-- [ ] Pass style options through to the plot (tracker: #1)
+- [x] Pass style options through to the plot (tracker: #1)
 - [ ] Better placement of text depending on plot size
 - [ ] Improve default step on axes
 - [ ] Add support for callouts that are not immediately above their assigned peak
