@@ -61,6 +61,11 @@ There are many ways to further enhance your spectrum, please check out the manua
 - [ ] Move to new Typst type system (waiting on upstream)
 - [ ] Add in function for displaying skeletal structure of chemical
 - [ ] Optional second axis for absolute intensity
+- [ ] Add additional display functions
+    - [ ] Figure out function signature for multiple data sets
+    - [ ] Overlayed and shifted
+    - [ ] Horizontal reflection
+        - [ ] How to update existing extras?
 
 See the [open issues](https://github.com/jamesxx/ionio-illustrate/issues) for a full list of proposed features (and known issues).
 
