@@ -2,17 +2,22 @@
 #import "util.typ": *
 #import "defaults.typ": *
 
+#let mass-spectrum-modes =(
+  "single", "dual-reflection"
+)
+
 /// Returns an object representing mass spectrum content.
 ///
-/// - data (array): The mass spectrum in the format of a 2D array, or an array of dictionarys.
+/// - data1 (array): The mass spectrum in the format of a 2D array, or an array of dictionarys.
 ///         By default, the mass-charges ratios are in the first column, and the relative
 ///         intensities are in the second column.
+/// - data2 (array): similar format as `data1`, but to contain a second mass spectrum.
 /// - args (dictionary): Override default behaviour of the mass spectrum by overriding methods,
 ///         or setting fields.
 /// -> dictionary, none
 #let mass-spectrum(
-  data,
   args: (:),
+  data1, data2: none,
 ) = {
 
   let prototype = (
@@ -21,7 +26,8 @@
 // Public member data
 // --------------------------------------------
 
-    data: data,
+    data1: data1,
+    data2: data2,
     keys: (
       mz: 0,
       intensity: 1
@@ -35,11 +41,17 @@
     ),
     linestyle: (this, idx)=>{},
     plot-extras: (this)=>{},
+    plot-extras-bottom: (this)=>{},
   )
+
+  // Asserts
+  assert(type(prototype.keys.mz) in (int, str))
+  assert(type(prototype.keys.intensity) in (int, str))
 
   // Overrides. This ensures the prototype is properly formed by the time we need it
   prototype = merge-dictionary(prototype,args)
   prototype.style = merge-dictionary(mass-spectrum-default-style,prototype.style)
+
 
 // --------------------------------------------
 // Methods : Utility
@@ -50,7 +62,10 @@
   // - mz (string, integer, float): Mass-charge ratio for which the intensity is being queried
   // -> float
   prototype.get-intensity-at-mz = (mz) => {
-    let intensity_arr = (prototype.data).filter(
+
+    // TODO: Handle reflections
+
+    let intensity_arr = (prototype.data1).filter(
         it=>float(it.at(prototype.keys.mz, default:0))==mz
       )
     if ( intensity_arr.len() == 0 ) {return 0}
@@ -71,6 +86,9 @@
   prototype.callout-above = (mz, content: none, y-offset: 0.3em) => {
     if ( mz <= prototype.range.at(0) or mz >= prototype.range.at(1) ){ return }
     if ( content == none ) { content = mz}
+
+    // TODO: Handle reflections
+
     return cetz.draw.content(
       anchor: "bottom",
       (mz, (prototype.get-intensity-at-mz)(mz)), box(inset: y-offset, [#content]),
@@ -84,6 +102,8 @@
     content: none,
   ) => {
     if (content == none){ content = [-#calc.abs(start - end)] }
+
+    // TODO: Handle reflections
 
     // Determine height
     let start_height = (prototype.get-intensity-at-mz)(start)
@@ -118,6 +138,9 @@
   }
 
   prototype.title = (content, anchor: "top-left", ..args) => {
+
+    // TODO: Handle reflections
+
     return cetz.draw.content(
       anchor: anchor,
       (prototype.range.at(0), 110),
@@ -142,7 +165,8 @@
     )
   }
 
-  prototype.setup-axes = () => {
+  prototype.setup-axes = (reflection: false) => {
+
     let axes = (:)
     axes.x = cetz.axes.axis(
       min: prototype.range.at(0), 
@@ -151,10 +175,10 @@
       //ticks: (step: 10, minor-step: none)
     )
     axes.y = cetz.axes.axis(
-      min: 0, 
-      max: 110,
+      min: if reflection {-115} else {0}, 
+      max:  if reflection {115} else {110},
       label: prototype.labels.y,
-      ticks: (step: 20, minor-step: none)
+      ticks: (step: if reflection {40} else {20}, minor-step: none)
     )
     return axes
   }
@@ -165,7 +189,7 @@
 // --------------------------------------------
 
   // ms.display-single-peak handles the rendering of a single mass peak
-  prototype.display-single-peak = (idx, mz, intensity, ..arguments) =>{
+  prototype.display-single-peak = (idx, mz, intensity, arguments) => {
     if (mz > prototype.range.at(0) and mz < prototype.range.at(1) ){
       cetz.draw.line(
         (mz, 0),
@@ -175,49 +199,84 @@
       )
     }
   }
-  
-  /// The ms.display method is responsible for rendering
-  prototype.display = () => {
 
-    // Setup canvas
-    cetz.canvas({
+  prototype.display-single-data = (dataset, style, scale: 1, dx: 0) => {
+    if dataset.len() > 0 {          
+      for (i, row) in dataset.enumerate() {
+        let x = float(row.at(prototype.keys.mz))
+        let y = float(row.at(prototype.keys.intensity))
+        (prototype.display-single-peak)(x, x + dx, y * scale, style)
+      }
+    }
+  }
 
-      import cetz.draw: *
-      let (x,y) = (prototype.setup-axes)()    
+  // The ms.display-single method is responsible for rendering
+  // a single mass spectra plot
+  prototype.display-single = (ctx) => {
+    import cetz.draw: *  
+    let (x,y) = (prototype.setup-axes)()  
 
-      // Begin group  
-      cetz.draw.group(ctx=>{
+    // Style
+    let style = merge-dictionary(
+      merge-dictionary(mass-spectrum-default-style, cetz.styles.resolve(ctx.style, (:), root: "mass-spectrum")),
+      prototype.style
+    )
 
-        // Style
-        let style = merge-dictionary(
-          merge-dictionary(mass-spectrum-default-style, cetz.styles.resolve(ctx.style, (:), root: "mass-spectrum")),
-          prototype.style
-        )
+    // Setup scientific axes
+    (prototype.setup-plot)(ctx, x, y, ..style.axes)
 
-        // Setup scientific axes
-        (prototype.setup-plot)(ctx, x, y, ..style.axes)
+    cetz.axes.axis-viewport(prototype.size, x, y,{
+      (prototype.plot-extras)(prototype)
+      (prototype.display-single-data)(prototype.data1, style.peaks)
+    })   
 
-        cetz.axes.axis-viewport(prototype.size, x, y,{
+  }
 
-          // Add in plot extras first
-          (prototype.plot-extras)(prototype)
+  // The ms.display-dual-reflection method is responsible for rendering
+  // multiple mass spectra on the same plot
+  prototype.display-dual-reflection = (ctx) => {
 
-          // Add each individual mass peak
-          if prototype.data.len() > 0 {          
-            for (i, row) in data.enumerate() {
-              let x = float(row.at(prototype.keys.mz))
-              let y = float(row.at(prototype.keys.intensity))
-              (prototype.display-single-peak)(x, x, y, ..style.peaks)
-            }
-          }
-        })
-      })
+    // If there is only one dataset, fail safely quickly
+    if ( prototype.data2 == none){
+      return (prototype.display-single)(ctx)
+    }
+
+    import cetz.draw: *  
+    let (x,y) = (prototype.setup-axes)(reflection: true)
+
+    // Style
+    let style = merge-dictionary(
+      merge-dictionary(mass-spectrum-default-style, cetz.styles.resolve(ctx.style, (:), root: "mass-spectrum")),
+      prototype.style
+    )
+    let style-data1 = merge-dictionary(style, prototype.style.data1).peaks
+    let style-data2 = merge-dictionary(style, prototype.style.data2).peaks
+
+    // Setup scientific axes
+    (prototype.setup-plot)(ctx, x, y, ..style.axes)
+
+    cetz.axes.axis-viewport(prototype.size, x, y,{
+      (prototype.plot-extras)(prototype)
+      (prototype.display-single-data)(prototype.data1, style-data1, scale: 1)
+      cetz.draw.line((prototype.range.at(0), 0), (prototype.range.at(1), 0))
+      (prototype.plot-extras-bottom)(prototype)
+      (prototype.display-single-data)(prototype.data2, style-data2, scale: -1)
     })
   }
 
-  // Asserts
-  assert(type(prototype.keys.mz) in (int, str))
-  assert(type(prototype.keys.intensity) in (int, str))
+  /// The ms.display method is responsible for rendering
+  prototype.display = (mode: "single") => {
+
+    assert(mode in mass-spectrum-modes, message: "Invalid mass-spectrum mode")
+
+    let render = (
+      if mode == "single" {prototype.display-single} else
+      if mode == "dual-reflection" {prototype.display-dual-reflection} 
+    )
+
+    // Setup canvas
+    cetz.canvas(cetz.draw.group(render))
+  }
 
   return prototype
 }

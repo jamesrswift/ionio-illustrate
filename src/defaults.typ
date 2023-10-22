@@ -15,4 +15,6 @@
   peaks: (
     stroke: black
   ),
+  data1: (peaks: (stroke: blue)),
+  data2: (peaks: (stroke: red)),
 )
