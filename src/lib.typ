@@ -69,10 +69,8 @@
   // - y-offset (length): Distance at which to display content above mass peak
   // -> content
   prototype.callout-above = (mz, content: none, y-offset: 0.3em) => {
+    if ( mz <= prototype.range.at(0) or mz >= prototype.range.at(1) ){ return }
     if ( content == none ) { content = mz}
-    // Style
-    // let style = merge-dictionary(mass-spectrum-default-style, prototype.style)
-
     return cetz.draw.content(
       anchor: "bottom",
       (mz, (prototype.get-intensity-at-mz)(mz)), box(inset: y-offset, [#content]),
