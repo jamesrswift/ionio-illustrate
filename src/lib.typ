@@ -1,44 +1,6 @@
 #import "@preview/cetz:0.1.2"
-
-/// Merge dictionary a and b and return the result
-/// Prefers values of b.
-///
-/// - a (dictionary): Dictionary a
-/// - b (dictionary): Dictionary b
-/// -> dictionary
-#let merge-dictionary(a, b, overwrite: true) = {
-  if type(a) == dictionary and type(b) == dictionary {
-    let c = a
-    for (k, v) in b {
-      if not k in c {
-        c.insert(k, v)
-      } else {
-        c.at(k) = merge-dictionary(a.at(k), v, overwrite: overwrite)
-      }
-    }
-    return c
-  } else {
-    return if overwrite {b} else {a}
-  }
-}
-
-#let mass-spectrum-default-style = (
-  axes: (
-    tick: (length:-0.1),
-    frame: true,
-    label: (offset: 0.3)
-  ),
-  title: (:),
-  callipers: (
-    stroke: gray + 0.7pt
-  ),
-  callouts: (
-    stroke: black
-  ),
-  peaks: (
-    stroke: black
-  ),
-)
+#import "util.typ": *
+#import "defaults.typ": *
 
 /// Returns an object representing mass spectrum content.
 #let mass-spectrum(
@@ -65,17 +27,7 @@
       y: [Relative Intensity (%)]
     ),
     linestyle: (this, idx)=>{},
-
-// --------------------------------------------
-// "Private" member data
-// --------------------------------------------
-    
-    axes: (
-      x: none,
-      y: none
-    ),
     plot-extras: (this)=>{},
-
   )
 
     // Overrides
@@ -93,166 +45,166 @@
 // Methods : Utility
 // --------------------------------------------
 
-    prototype.get-intensity-at-mz = (mz) => {
-      return float(
-        (prototype.data).filter(
-          it=>float(it.at(prototype.keys.mz, default:0))==mz
-        ).at(0).at(prototype.keys.intensity)
-      )
-    }
+  prototype.get-intensity-at-mz = (mz) => {
+    return float(
+      (prototype.data).filter(
+        it=>float(it.at(prototype.keys.mz, default:0))==mz
+      ).at(0).at(prototype.keys.intensity)
+    )
+  }
 
 // --------------------------------------------
 // Methods : Additional Content
 // --------------------------------------------
 
-    prototype.callout-above = (mz, content: none, y-offset: 0.3em) => {
-      if ( content == none ) { content = mz}
-      // Style
-      let style = merge-dictionary(mass-spectrum-default-style, prototype.style)
+  prototype.callout-above = (mz, content: none, y-offset: 0.3em) => {
+    if ( content == none ) { content = mz}
+    // Style
+    let style = merge-dictionary(mass-spectrum-default-style, prototype.style)
 
-      return cetz.draw.content(
+    return cetz.draw.content(
+      anchor: "bottom",
+      (mz, (prototype.get-intensity-at-mz)(mz)), box(inset: y-offset, [#content]),
+      ..style.callouts
+    )
+  }
+
+  prototype.callipers = (
+    start, end, // mass-charge ratios
+    height: none,
+    content: none,
+    stroke: gray + 0.7pt // Style
+  ) => {
+    if (content == none){ content = [-#calc.abs(start - end)] }
+
+    // Determine height
+    let start_height = (prototype.get-intensity-at-mz)(start)
+    let end_height = (prototype.get-intensity-at-mz)(end)
+    if ( height == none ) { height = calc.max(start_height, end_height) + 5 }
+
+    let draw-arrow(x, y) = cetz.draw.line(
+      (x - 0.5, y + 2),(x + 0.5, y + 2),
+      stroke: stroke
+    )
+
+    // Draw
+    return {
+      // Start : horizontal arrow
+      draw-arrow(start, start_height)
+      draw-arrow(end, end_height)
+      
+      cetz.draw.merge-path({
+        cetz.draw.line((start, start_height + 2), (start, height))
+        cetz.draw.line((start, height), (end, height))
+        cetz.draw.line((end, height),(end, end_height + 2))
+      }, stroke: stroke)
+
+      // Content
+      cetz.draw.content(
+        ( (start + end) / 2, height),
         anchor: "bottom",
-        (mz, (prototype.get-intensity-at-mz)(mz)), box(inset: y-offset, [#content]),
-        ..style.callouts
+        box(inset: 0.3em, content)
       )
     }
-
-    prototype.callipers = (
-      start, end, // mass-charge ratios
-      height: none,
-      content: none,
-      stroke: gray + 0.7pt // Style
-    ) => {
-      if (content == none){ content = [-#calc.abs(start - end)] }
-
-      // Determine height
-      let start_height = (prototype.get-intensity-at-mz)(start)
-      let end_height = (prototype.get-intensity-at-mz)(end)
-      if ( height == none ) { height = calc.max(start_height, end_height) + 5 }
-
-      let draw-arrow(x, y) = cetz.draw.line(
-        (x - 0.5, y + 2),(x + 0.5, y + 2),
-        stroke: stroke
-      )
-
-      // Draw
-      return {
-        // Start : horizontal arrow
-        draw-arrow(start, start_height)
-        draw-arrow(end, end_height)
-        
-        cetz.draw.merge-path({
-          cetz.draw.line((start, start_height + 2), (start, height))
-          cetz.draw.line((start, height), (end, height))
-          cetz.draw.line((end, height),(end, end_height + 2))
-        }, stroke: stroke)
-
-        // Content
-        cetz.draw.content(
-          ( (start + end) / 2, height),
-          anchor: "bottom",
-          box(inset: 0.3em, content)
-        )
-      }
-    }
+  }
 
   prototype.title = (content, anchor: "top-left", ..args) => {
-      return cetz.draw.content(
-        anchor: anchor,
-        (prototype.range.at(0), 110),
-        box(inset: 0.5em, content),
-        ..prototype.style.title,
-        ..args
-      )
-    }
+    return cetz.draw.content(
+      anchor: anchor,
+      (prototype.range.at(0), 110),
+      box(inset: 0.5em, content),
+      ..prototype.style.title,
+      ..args
+    )
+  }
 
   // --------------------------------------------
 // Methods : Property Setup, Internal
 // --------------------------------------------
 
-    prototype.setup-plot = (ctx, x, y, ..arguments) => {
-      cetz.axes.scientific(
-        size: prototype.size,
-        
-        // Axes
-        top: none, bottom: x,
-        right: none, left: y, // TODO: Optional secondary axis
-        ..arguments
-      )
-    }
+  prototype.setup-plot = (ctx, x, y, ..arguments) => {
+    cetz.axes.scientific(
+      size: prototype.size,
+      
+      // Axes
+      top: none, bottom: x,
+      right: none, left: y, // TODO: Optional secondary axis
+      ..arguments
+    )
+  }
 
-    prototype.setup-axes = () => {
-      let axes = (:)
-     axes.x = cetz.axes.axis(
-          min: prototype.range.at(0), 
-          max: prototype.range.at(1),
-          label: prototype.labels.x,
-        )
-     axes.y = cetz.axes.axis(
-          min: 0, 
-          max: 110,
-          label: prototype.labels.y,
-          ticks: (step: 20, minor-step: none)
-        )
-      return axes
-    }
+  prototype.setup-axes = () => {
+    let axes = (:)
+    axes.x = cetz.axes.axis(
+      min: prototype.range.at(0), 
+      max: prototype.range.at(1),
+      label: prototype.labels.x,
+      //ticks: (step: 10, minor-step: none)
+    )
+    axes.y = cetz.axes.axis(
+      min: 0, 
+      max: 110,
+      label: prototype.labels.y,
+      ticks: (step: 20, minor-step: none)
+    )
+    return axes
+  }
 
 
 // --------------------------------------------
 // Methods : Rendering
 // --------------------------------------------
 
-    // ms.display-single-peak handles the rendering of a single mass peak
-    prototype.display-single-peak = (idx, mz, intensity, ..arguments) => {
-      if (mz > prototype.range.at(0) and mz < prototype.range.at(1) ){
-        cetz.draw.line(
-          (mz, 0),
-          (rel: (0,intensity)),
-          ..arguments, // Global style is overriden by individual style
-          ..(prototype.linestyle)(prototype, idx)
-        )
-      }
+  // ms.display-single-peak handles the rendering of a single mass peak
+  prototype.display-single-peak = (idx, mz, intensity, ..arguments) =>{
+    if (mz > prototype.range.at(0) and mz < prototype.range.at(1) ){
+      cetz.draw.line(
+        (mz, 0),
+        (rel: (0,intensity)),
+        ..arguments, // Global style is overriden by individual style
+        ..(prototype.linestyle)(prototype, idx)
+      )
     }
-    
-    /// The ms.display method is responsible for rendering
-    prototype.display = () => {
+  }
+  
+  /// The ms.display method is responsible for rendering
+  prototype.display = () => {
 
-      // Setup canvas
-      cetz.canvas({
+    // Setup canvas
+    cetz.canvas({
 
-        import cetz.draw: *
-        let (x,y) = (prototype.setup-axes)()    
+      import cetz.draw: *
+      let (x,y) = (prototype.setup-axes)()    
 
-        // Begin group  
-        cetz.draw.group(ctx=>{
+      // Begin group  
+      cetz.draw.group(ctx=>{
 
-          // Style
-          let style = merge-dictionary(
-            merge-dictionary(mass-spectrum-default-style, cetz.styles.resolve(ctx.style, (:), root: "mass-spectrum")),
-            prototype.style
-          )
+        // Style
+        let style = merge-dictionary(
+          merge-dictionary(mass-spectrum-default-style, cetz.styles.resolve(ctx.style, (:), root: "mass-spectrum")),
+          prototype.style
+        )
 
-          // Setup scientific axes
-          (prototype.setup-plot)(ctx, x, y, ..style.axes)
+        // Setup scientific axes
+        (prototype.setup-plot)(ctx, x, y, ..style.axes)
 
-          cetz.axes.axis-viewport(prototype.size, x, y,{
+        cetz.axes.axis-viewport(prototype.size, x, y,{
 
-            // Add in plot extras first
-            (prototype.plot-extras)(prototype)
+          // Add in plot extras first
+          (prototype.plot-extras)(prototype)
 
-            // Add each individual mass peak
-            if prototype.data.len() > 0 {          
-              for (i, row) in data.enumerate() {
-                let x = float(row.at(prototype.keys.mz))
-                let y = float(row.at(prototype.keys.intensity))
-                (prototype.display-single-peak)(x, x, y, ..style.peaks)
-              }
+          // Add each individual mass peak
+          if prototype.data.len() > 0 {          
+            for (i, row) in data.enumerate() {
+              let x = float(row.at(prototype.keys.mz))
+              let y = float(row.at(prototype.keys.intensity))
+              (prototype.display-single-peak)(x, x, y, ..style.peaks)
             }
-          })
+          }
         })
       })
-    }
-
+    })
+  }
 
   // Asserts
   assert(type(prototype.keys.mz) in (int, str))
