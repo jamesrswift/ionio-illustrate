@@ -42,7 +42,7 @@ Then, load in your mass spectrum data and pass it through to the package like so
   range: (0,100),
 )) 
 
-#figure((ms.display)(ms))
+#figure((ms.display)())
 ```
 
 ![](gallery/isobulelene_epoxide.typ.png)
