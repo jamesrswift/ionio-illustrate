@@ -1,6 +1,6 @@
 #set par(justify: true)
 #set page(width: auto, height: auto, margin:1em)
-#set text(font: "Fira Sans", size: 7pt)
+#set text(size: 7pt)
 
 #import "../src/lib.typ": *
 

@@ -272,7 +272,7 @@
 
       (prototype.plot-extras-bottom)(prototype, reflected: true)
       (prototype.display-single-data)(prototype.data2, style-data2, scale: -1)
-      cetz.draw.line((prototype.range.at(0), 0), (prototype.range.at(1), 0))
+      cetz.draw.line((prototype.range.at(0), 0), (prototype.range.at(1), 0), ..style.axes)
     })
   }
 
@@ -305,7 +305,7 @@
 
       (prototype.plot-extras-bottom)(prototype, reflected:true)
       (prototype.display-single-data)(prototype.data2, style-data2, dx:+0.25)
-      cetz.draw.line((prototype.range.at(0), 0), (prototype.range.at(1), 0))
+      cetz.draw.line((prototype.range.at(0), 0), (prototype.range.at(1), 0),)
     })
   }
 

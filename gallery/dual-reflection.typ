@@ -1,6 +1,6 @@
 #set par(justify: true)
 #set page(width: auto, height: auto, margin:1em)
-#set text(font: "Fira Sans", size: 7pt)
+#set text( size: 7pt)
 
 #import "../src/lib.typ": *
 
@@ -13,7 +13,7 @@
 #let args = (
     range: (0,150),
     plot-extras: (this)=>{
-        (this.title)([Isobutelene])
+        (this.title)([Isobutelene Epoxide])
         (this.callout-above)(72)
     },
     plot-extras-bottom: (this, reflected: false)=>{
