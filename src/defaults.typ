@@ -14,8 +14,9 @@
     line: (stroke: gray + 0.45pt),
   ),
   peaks: (
-    stroke: black + 0.55pt
+    stroke: (paint: black, thickness: 0.55pt, cap: "butt")
   ),
-  data1: (peaks: (stroke: blue + 0.55pt)),
-  data2: (peaks: (stroke: red + 0.55pt)),
+  data1: (peaks: (stroke: (paint: blue, thickness: 0.55pt, cap: "butt"))),
+  data2: (peaks: (stroke: (paint: red, thickness: 0.55pt, cap: "butt"))),
+  shift-amount: 0.13
 )

@@ -188,7 +188,7 @@
         (mz, 0),
         (rel: (0,intensity)),
         ..arguments, // Global style is overriden by individual style
-        ..(prototype.linestyle)(prototype, idx)
+        ..(prototype.linestyle)(prototype, idx),
       )
     }
   }
@@ -215,9 +215,6 @@
       prototype.style
     )
 
-    // Setup scientific axes
-    (prototype.setup-plot)(ctx, x, y, ..style.axes)
-
     cetz.axes.axis-viewport(prototype.size, x, y,{
       // Prepare context argument
       let plot-ctx = (prototype: prototype, reflected: false)
@@ -230,6 +227,9 @@
       )
       (prototype.display-single-data)(prototype.data1, style.peaks)
     })   
+
+    // Setup scientific axes
+    (prototype.setup-plot)(ctx, x, y, ..style.axes)
 
   }
 
@@ -252,9 +252,6 @@
     )
     let style-data1 = merge-dictionary(style, prototype.style.data1).peaks
     let style-data2 = merge-dictionary(style, prototype.style.data2).peaks
-
-    // Setup scientific axes
-    (prototype.setup-plot)(ctx, x, y, ..style.axes)
 
     cetz.axes.axis-viewport(prototype.size, x, y,{
 
@@ -282,6 +279,10 @@
       // Draw mid-line
       cetz.draw.line((prototype.range.at(0), 0), (prototype.range.at(1), 0), ..style.axes)
     })
+
+    
+    // Setup scientific axes
+    (prototype.setup-plot)(ctx, x, y, ..style.axes)
   }
 
   // The ms.display-dual-shift method is responsible for rendering
@@ -304,30 +305,33 @@
     let style-data1 = merge-dictionary(style, prototype.style.data1).peaks
     let style-data2 = merge-dictionary(style, prototype.style.data2).peaks
 
-    // Setup scientific axes
-    (prototype.setup-plot)(ctx, x, y, ..style.axes)
 
     cetz.axes.axis-viewport(prototype.size, x, y,{
       // Prepare context argument
       let plot-ctx = (prototype: prototype, reflected: false)
+      let d = style.shift-amount
       
       // Draw top mass spectrum
       (prototype.display-extras)(
         (prototype.plot-extras)(prototype), 
-        axes: (x:x, y:y), dx:-0.25,
+        axes: (x:x, y:y), dx:-d,
         plot-ctx: plot-ctx
       )
-      (prototype.display-single-data)(prototype.data1, style-data1, dx:-0.25)
+      (prototype.display-single-data)(prototype.data1, style-data1, dx:-d)
 
       // Draw bottom mass spectrum
       let plot-ctx = (prototype: prototype, reflected: true)
       (prototype.display-extras)(
         (prototype.plot-extras-bottom)(prototype), 
-        axes: (x:x, y:y), dx:+0.25,
+        axes: (x:x, y:y), dx:+d,
         plot-ctx: plot-ctx
       )
-      (prototype.display-single-data)(prototype.data2, style-data2, dx:+0.25)
+      (prototype.display-single-data)(prototype.data2, style-data2, dx:+d)
     })
+
+    
+    // Setup scientific axes
+    (prototype.setup-plot)(ctx, x, y, ..style.axes)
   }
 
   /// The ms.display method is responsible for rendering
