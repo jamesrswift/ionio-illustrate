@@ -94,6 +94,8 @@
   prototype.callout-aside = extras.callout-aside
   prototype.callipers = extras.callipers
   prototype.title = extras.title
+  prototype.cetz-raw = extras.cetz-raw
+  prototype.content = extras.content
 
 // --------------------------------------------
 // Methods : Property Setup, Internal
