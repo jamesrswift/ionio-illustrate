@@ -4,7 +4,7 @@
 // Setup: tidy style 
 // --------------------------------------------
 #import "@preview/tidy:0.1.0"
-#let show-type(type) = tidy.styles.minimal.show-type(type)
+#let show-type(type) = tidy.styles.default.show-type(type)
 
 // --------------------------------------------
 // Setup: gentle-clues style 
@@ -24,7 +24,7 @@
 #set heading(numbering: "1.")
 #set terms(indent: 1em)
 #show link: set text(blue)
-#set text(font: "Fira Sans")
+#set text(font: "Fira Sans", size: 10pt)
 
 // Example code setup
 #show raw.where(lang:"typ"): it => block(
@@ -108,16 +108,20 @@ This documentation is hand-written, and therefore may sometimes be incorrect if 
 
 == `mass-spectrum()`
 The `mass-spectrum()` function takes two positional arguments:
-/ `data` (#show-type("array") or #show-type("dictionary")): This is a 2-dimensional array relating mass-charge ratios to their intensities. By default, the first column is the mass-charge ratio and the second column is the intensity.
+/ `data1` (#show-type("array") or #show-type("dictionary")): This is a 2-dimensional array relating mass-charge ratios to their intensities. By default, the first column is the mass-charge ratio and the second column is the intensity. Data for a second mass spectrum is stored within the `args` parameter below.
+/ `data2` (#show-type("array") or #show-type("dictionary")): An optional second mass spectrum to display. Data is in the same format as in `data1`.
 / `args` (#show-type("dictionary")): This contains suplemental data that can be used to change the style of the mass spectrum, or to add additional content using provided functions (see @extra-content).
+
 The defaults for the `args` dictionary are shown below:
 
 ```typ
+data1: none,
+data2: none,
 keys: (
   mz: 0,
   intensity: 1
 ),
-size: (auto, 1),
+size: (14,5),
 range: (40, 400),
 style: mass-spectrum-default-style,
 labels: (
@@ -126,6 +130,7 @@ labels: (
 ),
 linestyle: (this, idx)=>{},
 plot-extras: (this)=>{},
+plot-extras-bottom: (this)=>{},
 ```
 
 // --------------------------------------------
@@ -135,7 +140,7 @@ plot-extras: (this)=>{},
 The `keys` entry in the `args` positional argument is a #show-type("dictionary") that can be used to change which fields in the provided `data` #show-type("array")/#show-type("dictionary") are to be used to plot the mass spectrum. An example usage of this may be to store several mass spectra within a single datafile.
 
 #info[Note that arrays are 0-index based.]
-
+#info[When two mass spectra are provided, both must use the same keys.]
 #example[
 ```typ
 #let ms = mass-spectrum(massspec, args: (
@@ -177,11 +182,15 @@ The `range` entry in the `args` positional argument is a tuple specifying the mi
 // --------------------------------------------
 === `style`
 The `style` entry in the `args` positional argument is a cetz #show-type("style") dictionary. This dictionary accepts 5 entrys, each affecting a different part of the mass spectrum plot:
-  / `axes`: This is a style dictionary that is passed to `cetz.axes.scientific` after expansion. Please refer to the Cetz documentation for the subentries that are available (at the time of writing, these include `tick`, `frame`, and `label` among other things)
+  / `axes`: This is a style dictionary that is passed to `cetz.axes.scientific` after expansion. Please refer to the Cetz documentation for the subentries that are available (at the time of writing, these include `tick`, `frame`, and `label` among other things)/
   / `callouts`: This is passed directly to `cetz.draw.content` after expansion. Please refer to the Cetz documentation for the subentries that are available (at the time of writing, these include `stroke`, `fill`, and `frame`, and `padding`)
   / `peaks`: This is the style passed to all peaks being drawn(overriden by the `linestyle` function). Internally, this is passed to `cetz.draw.line`. Please refer to the Cetz documentation for the subentries that are available (at the time of writing, this include `stroke`)
   / `title`: This is passed directly to `cetz.draw.content` after expansion. Please refer to the Cetz documentation for the subentries that are available (at the time of writing, these include `stroke`, `fill`, and `frame`, and `padding`)
   / `callipers`: This dictionary entry itself is a dictionary that takes `line` (which is passed directly to `cetz.draw.line` after expansion) which allows customisation of the calliper's lines, and `content` (which is passed directly to `cetz.draw.content`) which allows for customizing the content placed above the callipers.
+  / `peaks`: #text(fill: red, weight: "bold")[TO DO]
+  / `data1`: #text(fill: red, weight: "bold")[TO DO]
+  / `data2`: #text(fill: red, weight: "bold")[TO DO]
+  / `shift-amount`: #text(fill: red, weight: "bold")[TO DO]
 
 // --------------------------------------------
 // Humanist Documentation: Labels
@@ -218,7 +227,7 @@ The `linestyle` entry in the `args` positional argument is a function taking two
 // --------------------------------------------
 // Humanist Documentation: Plot Extras
 // --------------------------------------------
-=== `plot-extras` <extra-content>
+=== `plot-extras` and `plot-extras-bottom` <extra-content>
 The `plot-extras` entry in the `args` positional argument is a function taking one parameter, `this`, which refers to the `#ms` object. It can be used to add additional content to a mass spectrum using provided functions
 
 #example[```typ
@@ -279,8 +288,13 @@ These are the functions that will render the mass spectrum. For the moment there
 
 #warning[Display functions *must not* be called within the context of a `plot-extras(this)` function.]
 
-==== `#ms.display()`
-The `#ms.display` method is used to place a mass spectrum within a document. It can be called several times. 
+==== `#ms.display(mode)`
+The `#ms.display` method is used to place a single mass spectrum within a document. It can be called several times. 
+
+`mode` can be any of 
+  / `single`: (default) Displays a single mass spectrum from the first dataset.
+  / `dual-reflection`: displays both given mass spectra, with one reflected about the mass axis.
+  / `dual-shift`: Displays both mass spectra on the same axis, offset from one another.
 
 // --------------------------------------------
 // Humanist Documentation: Plot extras
@@ -295,25 +309,30 @@ The `#ms.title` method allows the addition of a title to a mass spectrum.
 
 It takes one positional argument, content (#show-type("content") or #show-type("string")).
 
-==== `#ms.callout-above(mz, content: [], y-offset)`
+==== `#ms.callout-above(mz, content: [], inset)`
 The `#ms.callout-above` method places a callout slightly above the intensity peak for a given mass-charge ratio. 
 
 It takes one positional argument `mz` (#show-type("integer"), #show-type("float"), or #show-type("string")) and two named arguments, `content` (#show-type("content"), #show-type("string"), or #show-type("none")) to be displayed above the mass peak, and `y-offset` (#show-type("length")), which is the distance above the mass peak at which the content is displayed.
 
 - If `content` is #show-type("none"), the default value is that which is provided as `mz`.
-- If `height` is #show-type("none"), the default value is `0.3em`.
+- If `inset` is #show-type("none"), the default value is `0.3em`.
 - If `mz` is outside of the mass spectrums rang x-axis range, it will not be shown
 
-==== `#ms.callipers(mz1, mz2, content: none, height: none)`
+==== `#ms.callout-aside(mz, position, height, content, anchor, inset)`
+Behaves similarly to `#ms.calloutbove`, however, content is instead rendered at a specified position, with a faint line connecting the content to the mass peak at the specified height.
+
+If `height` is not specified, it is #show-type("auto"). If it is auto, it is set to `100%`.
+If `height` is a ratio, the height is set to that ratio of the mass-peak intensity at `mz`.
+
+If `content` is not provided, it defaults to `mz`.
+
+==== `#ms.callipers(mz1, mz2, content: none, height: none, arrow-width: 1, inset: 0.5em)`
 The `#ms.callipers` method places a mass callipers between two mass spectrum peaks, along with any desired content centered above the callipers. 
 
 It takes two positional arguments `mz1` and `mz2` (either of which are #show-type("integer"), #show-type("float"), or #show-type("string")) which represent the start and end of the callipers respectively, and two named arguments, `content` (#show-type("content"), #show-type("string"), or #show-type("none")) which is displayed centered above the callipers, and `height` (#show-type("length")), which is the distance at which the content floats above the mass peak.
 
-- If `content` is #show-type("none"), the default value is to display the negative absolute difference between `mz1` and `mz2`.
+- If `content` is #show-type("none"), it is set automatically to represent the loss of mass between the specified peaks.
 
 - If `height` is #show-type("none"), the default value is `0.3em`.
 
 #warning[The behaviour is *undefined* when either `mz1` or `mz2` are outside the x-axis range.]
-
-- If `height` is not specified, it is set automatically to a few units above the most intense peak. 
-- If `content` is not specified, it is set automatically to represent the loss of mass between the specified peaks.

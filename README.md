@@ -56,16 +56,16 @@ There are many ways to further enhance your spectrum, please check out the manua
 - [x] Pass style options through to the plot (tracker: #1)
 - [ ] Better placement of text depending on plot size
 - [ ] Improve default step on axes
-- [ ] Add support for callouts that are not immediately above their assigned peak
+- [x] Add support for callouts that are not immediately above their assigned peak
     - [ ] Automatically detect when two annotations are too close, and display accordingly
 - [ ] Move to new Typst type system (waiting on upstream)
-- [ ] Add in function for displaying skeletal structure of chemical
+- [x] Add in function for displaying skeletal structure of chemical
 - [ ] Optional second axis for absolute intensity
-- [ ] Add additional display functions
-    - [ ] Figure out function signature for multiple data sets
-    - [ ] Overlayed and shifted
-    - [ ] Horizontal reflection
-        - [ ] How to update existing extras?
+- [x] Add additional display functions
+    - [x] Figure out function signature for multiple data sets
+    - [x] Overlayed and shifted
+    - [x] Horizontal reflection
+        - [x] How to update existing extras?
 
 See the [open issues](https://github.com/jamesxx/ionio-illustrate/issues) for a full list of proposed features (and known issues).
 
