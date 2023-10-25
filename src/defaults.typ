@@ -11,7 +11,7 @@
     content: (:)
   ),
   callouts: (
-    stroke: black
+    line: (stroke: gray + 0.45pt),
   ),
   peaks: (
     stroke: black + 0.55pt

@@ -11,7 +11,7 @@
       self.coordinates.at(0),
       //(72, 80),
       box(inset: self.inset, [#self.content]),
-      //..ctx.prototype.style.callouts
+      ..ctx.prototype.style.title
     )
 }
 

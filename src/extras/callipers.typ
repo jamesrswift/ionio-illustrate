@@ -48,7 +48,7 @@
       coords.content,
       anchor: self.anchors.at(0),
       box(inset: self.inset, [#self.content]),
-      //..ctx.prototype.style.callouts
+      ..ctx.prototype.style.callouts
     )
 
 }

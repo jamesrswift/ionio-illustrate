@@ -24,9 +24,7 @@
   if type(body) == array { return body.map(fn) } 
   else if type(body) == dictionary { 
     let ret = (:)
-    for (k,v) in body{
-      ret.insert(k, fn(v))
-    }
+    for (k,v) in body{ ret.insert(k, fn(v)) }
     return ret
   }
 }
