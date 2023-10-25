@@ -4,7 +4,7 @@
 #import "extras.typ"
 
 #let mass-spectrum-modes =(
-  "single", "dual-reflection", // "dual-shift"
+  "single", "dual-reflection", "dual-shift"
 )
 
 /// Returns an object representing mass spectrum content.
@@ -90,13 +90,8 @@
 // Methods : Additional Content
 // --------------------------------------------
 
-  // Plot-extras function that will place content above a mass peak
-  // - mz (string, integer, float): Mass-charge above which to display content
-  // - content (content, string, none): Content to show above mass peak. Defaults to given mz
-  // - y-offset (length): Distance at which to display content above mass peak
-  // -> content
   prototype.callout-above = extras.callout-above
-
+  prototype.callout-aside = extras.callout-aside
   prototype.callipers = extras.callipers
   prototype.title = extras.title
 
@@ -313,12 +308,25 @@
     (prototype.setup-plot)(ctx, x, y, ..style.axes)
 
     cetz.axes.axis-viewport(prototype.size, x, y,{
-      (prototype.plot-extras)(prototype)
+      // Prepare context argument
+      let plot-ctx = (prototype: prototype, reflected: false)
+      
+      // Draw top mass spectrum
+      (prototype.display-extras)(
+        (prototype.plot-extras)(prototype), 
+        axes: (x:x, y:y), dx:-0.25,
+        plot-ctx: plot-ctx
+      )
       (prototype.display-single-data)(prototype.data1, style-data1, dx:-0.25)
 
-      (prototype.plot-extras-bottom)(prototype, reflected:true)
+      // Draw bottom mass spectrum
+      let plot-ctx = (prototype: prototype, reflected: true)
+      (prototype.display-extras)(
+        (prototype.plot-extras-bottom)(prototype), 
+        axes: (x:x, y:y), dx:+0.25,
+        plot-ctx: plot-ctx
+      )
       (prototype.display-single-data)(prototype.data2, style-data2, dx:+0.25)
-      cetz.draw.line((prototype.range.at(0), 0), (prototype.range.at(1), 0),)
     })
   }
 
