@@ -1,6 +1,7 @@
 #import "@preview/cetz:0.1.2"
 #import "util.typ": *
 #import "defaults.typ": *
+#import "extras.typ"
 
 #let mass-spectrum-modes =(
   "single", "dual-reflection", // "dual-shift"
@@ -68,10 +69,9 @@
   //
   // - mz (string, integer, float): Mass-charge ratio for which the intensity is being queried
   // -> float
-  prototype.get-intensity-at-mz = (mz, reflected: false) => {
+  prototype.get-intensity-at-mz = (mz, input: auto) => {
 
-    let data = prototype.data1
-    if ( reflected ){ data = prototype.data2 }
+    let data = (if input == auto {prototype.data1} else {input})
 
     // Search all mz matching query
     let intensity_arr = data.filter(
@@ -95,71 +95,10 @@
   // - content (content, string, none): Content to show above mass peak. Defaults to given mz
   // - y-offset (length): Distance at which to display content above mass peak
   // -> content
-  prototype.callout-above = (mz, content: none, y-offset: 0.3em, reflected: false) => {
-    if ( mz <= prototype.range.at(0) or mz >= prototype.range.at(1) ){ return }
-    if ( content == none ) { content = mz}
+  prototype.callout-above = extras.callout-above
 
-    let y = (prototype.get-intensity-at-mz)(mz, reflected: reflected)
-    if (reflected){y=-1*y}
-
-    return cetz.draw.content(
-      anchor: if reflected {"top"} else {"bottom"},
-      (mz, y), box(inset: y-offset, [#content]),
-      ..prototype.style.callouts
-    )
-  }
-
-  prototype.callipers = (
-    start, end, // mass-charge ratios
-    height: none,
-    content: none,
-  ) => {
-    if (content == none){ content = [-#calc.abs(start - end)] }
-
-    // TODO: Handle reflections
-
-    // Determine height
-    let start_height = (prototype.get-intensity-at-mz)(start)
-    let end_height = (prototype.get-intensity-at-mz)(end)
-    if ( height == none ) { height = calc.max(start_height, end_height) + 5 }
-
-    let draw-arrow(x, y) = cetz.draw.line(
-      (x - 0.5, y + 2),(x + 0.5, y + 2),
-      ..prototype.style.callipers.line
-    )
-
-    // Draw
-    return {
-      // Start : horizontal arrow
-      draw-arrow(start, start_height)
-      draw-arrow(end, end_height)
-      
-      cetz.draw.merge-path({
-        cetz.draw.line((start, start_height + 2), (start, height))
-        cetz.draw.line((start, height), (end, height))
-        cetz.draw.line((end, height),(end, end_height + 2))
-      }, ..prototype.style.callipers.line)
-
-      // Content
-      cetz.draw.content(
-        ( (start + end) / 2, height),
-        anchor: "bottom",
-        box(inset: 0.3em, content),
-        ..prototype.style.callipers.content
-      )
-    }
-  }
-
-  prototype.title = (content, reflected: false, ..args) => {
-
-    return cetz.draw.content(
-      anchor: if reflected {"bottom-left"} else {"top-left"},
-      (prototype.range.at(0), if reflected {-110} else {110}),
-      box(inset: 0.5em, content),
-      ..prototype.style.title,
-      ..args
-    )
-  }
+  prototype.callipers = extras.callipers
+  prototype.title = extras.title
 
 // --------------------------------------------
 // Methods : Property Setup, Internal
@@ -177,7 +116,6 @@
   }
 
   prototype.setup-axes = (reflection: false) => {
-
     let axes = (:)
     axes.x = cetz.axes.axis(
       min: prototype.range.at(0), 
@@ -198,6 +136,55 @@
 // --------------------------------------------
 // Methods : Rendering
 // --------------------------------------------
+
+  prototype.display-extras = (body, axes: (:), sy: 1, dx: 0, plot-ctx: (:)) => {
+
+    // Assert we are drawing commands
+    let body = if body != none { body } else { () }
+    for cmd in body {
+      assert(
+        type(cmd) == dictionary and "type" in cmd,
+        message: "Expected plot sub-command in plot body, got " + repr(cmd)
+      )
+    }
+
+    // Prepare
+    for i in range(body.len()) {
+      if "plot-prepare" in body.at(i) {
+        body.at(i) = (body.at(i).plot-prepare)(body.at(i), plot-ctx)
+      }
+    }
+
+    // Transform coordinates
+    for i in range(body.len()) {
+      if "coordinates" in body.at(i).keys() { 
+        body.at(i).coordinates = map( body.at(i).coordinates, (it) => {
+          (it.at(0) + dx, it.at(1) * sy)
+        })
+      }
+
+      if ( sy < 0 ){
+        if "anchors" in body.at(i).keys() { 
+          body.at(i).anchors = body.at(i).anchors.map( (it) => {
+            if it == "bottom" {return "top"}
+            if it == "top-left" {return "bottom-left"}
+          })
+        }
+      }
+    }
+
+    // panic(body)
+
+    // Stroke + Mark data
+    for d in body {      
+      //cetz.axes.axis-viewport(prototype.size, axes.x, axes.y, {
+      //  cetz.draw.anchor("center", (0, 0))
+        if "style" in d {cetz.draw.set-style(..d.style)}
+        if "plot-fill" in d {(d.plot-fill)(d, plot-ctx)}
+        if "plot-stroke" in d {(d.plot-stroke)(d, plot-ctx)}
+      //})
+    }
+  }
 
   // ms.display-single-peak handles the rendering of a single mass peak
   prototype.display-single-peak = (idx, mz, intensity, arguments) => {
@@ -237,7 +224,15 @@
     (prototype.setup-plot)(ctx, x, y, ..style.axes)
 
     cetz.axes.axis-viewport(prototype.size, x, y,{
-      (prototype.plot-extras)(prototype)
+      // Prepare context argument
+      let plot-ctx = (prototype: prototype, reflected: false)
+      
+      // Draw top mass spectrum
+      (prototype.display-extras)(
+        (prototype.plot-extras)(prototype), 
+        axes: (x:x, y:y),
+        plot-ctx: plot-ctx
+      )
       (prototype.display-single-data)(prototype.data1, style.peaks)
     })   
 
@@ -267,11 +262,29 @@
     (prototype.setup-plot)(ctx, x, y, ..style.axes)
 
     cetz.axes.axis-viewport(prototype.size, x, y,{
-      (prototype.plot-extras)(prototype)
+
+      // Prepare context argument
+      let plot-ctx = (prototype: prototype, reflected: false)
+      
+      // Draw top mass spectrum
+      (prototype.display-extras)(
+        (prototype.plot-extras)(prototype), 
+        axes: (x:x, y:y),
+        plot-ctx: plot-ctx
+      )
       (prototype.display-single-data)(prototype.data1, style-data1, scale: 1)
 
-      (prototype.plot-extras-bottom)(prototype, reflected: true)
+      // Draw bottom mass spectrum
+      let plot-ctx = (prototype: prototype, reflected: true)
+      (prototype.display-extras)(
+        (prototype.plot-extras-bottom)(prototype), 
+        axes: (x:x, y:y),
+        sy: -1,
+        plot-ctx: plot-ctx
+      )
       (prototype.display-single-data)(prototype.data2, style-data2, scale: -1)
+
+      // Draw mid-line
       cetz.draw.line((prototype.range.at(0), 0), (prototype.range.at(1), 0), ..style.axes)
     })
   }

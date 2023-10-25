@@ -19,3 +19,14 @@
     return if overwrite {b} else {a}
   }
 }
+
+#let map(body, fn) = {
+  if type(body) == array { return body.map(fn) } 
+  else if type(body) == dictionary { 
+    let ret = (:)
+    for (k,v) in body{
+      ret.insert(k, fn(v))
+    }
+    return ret
+  }
+}

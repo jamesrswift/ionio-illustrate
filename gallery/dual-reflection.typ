@@ -16,11 +16,12 @@
         (this.title)([Isobutelene Epoxide])
         (this.callout-above)(72)
     },
-    plot-extras-bottom: (this, reflected: false)=>{
-        (this.title)([Linalool, NIST Library 2017], reflected: reflected)
-        (this.callout-above)(121, reflected: reflected)
-        (this.callout-above)(93, reflected: reflected)
-        (this.callout-above)(80, reflected: reflected)
+    plot-extras-bottom: (this)=>{
+        (this.title)([Linalool, NIST Library 2017])
+        (this.callout-above)(121)
+        (this.callout-above)(93)
+        (this.callout-above)(80)
+        (this.callipers)(41, 55, content: [-CH#sub[2]])
     }
 )
 
