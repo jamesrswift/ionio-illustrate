@@ -1,4 +1,4 @@
-#import "src/lib.typ": *
+#import "../src/lib.typ": *
 
 // --------------------------------------------
 // Setup: tidy style 
@@ -38,7 +38,7 @@
 // --------------------------------------------
 // Setup: Example data
 // --------------------------------------------
-#let data = csv("assets/isobutelene_epoxide.csv")
+#let data = csv("../assets/isobutelene_epoxide.csv")
 #let massspec = data.slice(1)
 
 // --------------------------------------------
@@ -94,7 +94,7 @@ It is important to note at this point that the syntax for interacting with mass 
 This documentation is generated automatically for each package release, and is guaranteed to be an acurate representation of the API in the strictest of terms, but may lack the additional explanations and examples that make for a good documentation. For a more approachable documentation (at the cost of potentially incorrect descriptions due to oversight), please see the hand-written documentation in @humandoc.
 
 #{
-    let module = tidy.parse-module(read("src/lib.typ"))
+    let module = tidy.parse-module(read("../src/lib.typ"))
     tidy.show-module(module, style: tidy.styles.default)
 }
 
@@ -251,7 +251,7 @@ The `plot-extras` entry in the `args` positional argument is a function taking o
 ```]
 #[
   #set text(font: "Fira Sans", size: 7pt)
-  #let data1 = csv("assets/linalool.csv")
+  #let data1 = csv("../assets/linalool.csv")
   #let massspec1 = data1.slice(1)
   #let ms2 = mass-spectrum(massspec1, args: (
     range: (0,150),

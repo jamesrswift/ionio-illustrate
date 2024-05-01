@@ -20,7 +20,7 @@ mkdir dist\%version%
 rem Copy directories and files
 xcopy assets dist\%version%\assets\ /E /I
 xcopy src dist\%version%\src\ /E /I
-copy manual.pdf dist\%version%\
+copy docs\manual.pdf dist\%version%\
 copy LICENSE dist\%version%\
 copy CHANGELOG.md dist\%version%\
 copy README.md dist\%version%\
